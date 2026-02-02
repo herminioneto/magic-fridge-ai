@@ -1,5 +1,6 @@
 package dev.java10x.MagicFridgeAI.service;
 
+import dev.java10x.MagicFridgeAI.model.FoodItem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -7,6 +8,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class AIService {
@@ -20,8 +22,14 @@ public class AIService {
         this.webClient = webClient;
     }
 
-    public Mono<String> generateRecipe() {
-        String prompt = "Me sugira uma receita simples com ingredientes comuns.";
+    public Mono<String> generateRecipe(List<FoodItem> foodItems) {
+
+        String ingredients = foodItems.stream()
+            .map(item -> String.format("%s (%s) - Quantidade: %d, Validade: %s",
+                item.getName(), item.getCategory(), item.getQuantity(), item.getExpirationDate()))
+            .collect(Collectors.joining("\n"));
+            ;
+        String prompt = "Me sugira uma receita simples com os seguintes ingredientes:\n " + ingredients;
 
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(Map.of(
